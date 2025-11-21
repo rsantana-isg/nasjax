@@ -34,7 +34,7 @@ class BaseNetwork(eqx.Module):
                 - 'sigmoid': Sigmoid activation
                 - 'tanh': Hyperbolic tangent
                 - 'softplus': Softplus activation
-                - 'softsign': Softsign activation
+                - 'softsign': Softsign activation (x / (1 + |x|))
                 - None: Identity (no activation)
 
         Returns:
@@ -48,13 +48,18 @@ class BaseNetwork(eqx.Module):
             >>> x = jnp.array([-1, 0, 1])
             >>> print(relu(x))  # [0, 0, 1]
         """
+        # Custom softsign implementation since JAX doesn't provide it
+        def softsign(x):
+            """Softsign activation: x / (1 + |x|)"""
+            return x / (1.0 + jnp.abs(x))
+
         activations = {
             "relu": jnn.relu,
             "elu": jnn.elu,
             "sigmoid": jnn.sigmoid,
             "tanh": jnn.tanh,
             "softplus": jnn.softplus,
-            "softsign": jnn.softsign,
+            "softsign": softsign,
             None: lambda x: x,  # Identity
         }
 
