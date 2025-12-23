@@ -1,8 +1,8 @@
 # NASJAX Implementation Status
 
-**Last Updated:** 2025-11-21
+**Last Updated:** 2025-12-23
 **Current Version:** 0.1.0-dev
-**Status:** Foundation Complete ✓
+**Status:** Phase 2 Complete - Core Descriptors ✓
 
 ---
 
@@ -109,7 +109,139 @@ This document tracks the implementation status of NASJAX components according to
 
 ---
 
-## ✅ Completed: Testing
+## ✅ Completed: Phase 2 - Core Descriptors (NEW)
+
+### CNN Descriptor ✓
+**File:** `nasjax/descriptors/cnn.py`
+
+**Implemented:**
+- `CNNDescriptor` as immutable NamedTuple
+- PyTree registration (`tree_flatten`, `tree_unflatten`)
+- `random_init()` static method for generating random CNN architectures
+- `validate()` method with comprehensive constraint checking
+- `to_dict()` / `from_dict()` for serialization
+- Helper function: `calculate_cnn_output_shape()` for shape calculations
+- Full documentation with examples
+
+**Features:**
+- Layer types (Conv, MaxPool, AvgPool)
+- Filter sizes per layer (height, width, channels)
+- Stride sizes per layer
+- Activation functions per layer
+- Weight initializers per layer
+- Batch normalization flag
+- Architecture constraints (max layers, max filter size, max stride)
+
+**Status:** Complete and committed
+
+---
+
+### RNN Descriptor ✓
+**File:** `nasjax/descriptors/rnn.py`
+
+**Implemented:**
+- `RNNDescriptor` as immutable NamedTuple
+- PyTree registration (`tree_flatten`, `tree_unflatten`)
+- `random_init()` static method for generating random RNN architectures
+- `validate()` method with comprehensive constraint checking
+- `to_dict()` / `from_dict()` for serialization
+- Full documentation with examples
+
+**Features:**
+- RNN types (SimpleRNN, LSTM, GRU) per layer
+- Units per layer
+- Bidirectional flags per layer
+- Activation functions per layer
+- Weight initializers per layer
+- Dropout probabilities per layer
+- Batch normalization flag
+- Architecture constraints (max layers, max units)
+
+**Status:** Complete and committed
+
+---
+
+### TCNN Descriptor ✓
+**File:** `nasjax/descriptors/tcnn.py`
+
+**Implemented:**
+- `TCNNDescriptor` as immutable NamedTuple
+- PyTree registration (`tree_flatten`, `tree_unflatten`)
+- `random_init()` static method for generating random TCNN architectures
+- `validate()` method with comprehensive constraint checking
+- `to_dict()` / `from_dict()` for serialization
+- Helper function: `calculate_tcnn_output_shape()` for shape calculations
+- Full documentation with examples
+
+**Features:**
+- Transposed convolutional layers for generative tasks
+- Filter sizes per layer (height, width, channels)
+- Stride sizes per layer
+- Activation functions per layer
+- Weight initializers per layer
+- Batch normalization flag
+- Architecture constraints (max layers, max filter size, max stride)
+
+**Status:** Complete and committed
+
+---
+
+## ✅ Completed: Testing for Phase 2
+
+### Test Suite for CNN Descriptor ✓
+**File:** `tests/test_cnn_descriptor.py`
+
+**Test Classes:**
+- `TestCNNDescriptorCreation` - Random initialization, reproducibility
+- `TestCNNDescriptorValidation` - Constraint validation
+- `TestCNNDescriptorPyTree` - PyTree registration and operations
+- `TestCNNDescriptorSerialization` - to_dict/from_dict roundtrips
+- `TestCNNDescriptorEdgeCases` - Single layer, edge cases
+- `TestCNNShapeCalculation` - Output shape calculation helpers
+
+**Coverage:** 86% of CNN descriptor code
+**Tests:** 21 tests, all passing
+
+**Status:** Complete and committed
+
+---
+
+### Test Suite for RNN Descriptor ✓
+**File:** `tests/test_rnn_descriptor.py`
+
+**Test Classes:**
+- `TestRNNDescriptorCreation` - Random initialization, reproducibility
+- `TestRNNDescriptorValidation` - Constraint validation
+- `TestRNNDescriptorPyTree` - PyTree registration and operations
+- `TestRNNDescriptorSerialization` - to_dict/from_dict roundtrips
+- `TestRNNDescriptorEdgeCases` - Single layer, mixed types, bidirectional
+
+**Coverage:** 94% of RNN descriptor code
+**Tests:** 24 tests, all passing
+
+**Status:** Complete and committed
+
+---
+
+### Test Suite for TCNN Descriptor ✓
+**File:** `tests/test_tcnn_descriptor.py`
+
+**Test Classes:**
+- `TestTCNNDescriptorCreation` - Random initialization, reproducibility
+- `TestTCNNDescriptorValidation` - Constraint validation
+- `TestTCNNDescriptorPyTree` - PyTree registration and operations
+- `TestTCNNDescriptorSerialization` - to_dict/from_dict roundtrips
+- `TestTCNNDescriptorEdgeCases` - Single layer, edge cases
+- `TestTCNNShapeCalculation` - Output shape calculation helpers
+
+**Coverage:** 90% of TCNN descriptor code
+**Tests:** 23 tests, all passing
+
+**Status:** Complete and committed
+
+---
+
+## ✅ Completed: Testing (Updated)
 
 ### Test Suite for MLP Descriptor ✓
 **File:** `tests/test_mlp_descriptor.py`
@@ -148,10 +280,21 @@ This document tracks the implementation status of NASJAX components according to
 
 Users can now:
 
-1. ✅ **Create Descriptors**
+1. ✅ **Create Descriptors (All Types)**
    ```python
-   from nasjax.descriptors import MLPDescriptor
-   desc = MLPDescriptor.random_init(784, 10, 5, 128, key)
+   from nasjax.descriptors import MLPDescriptor, CNNDescriptor, RNNDescriptor, TCNNDescriptor
+   
+   # MLP for fully connected networks
+   mlp_desc = MLPDescriptor.random_init(784, 10, 5, 128, key)
+   
+   # CNN for image classification
+   cnn_desc = CNNDescriptor.random_init((28, 28, 1), (7, 7, 10), 5, 5, 3, key)
+   
+   # RNN for sequence modeling
+   rnn_desc = RNNDescriptor.random_init(10, 5, 3, 128, key)
+   
+   # TCNN for generative tasks
+   tcnn_desc = TCNNDescriptor.random_init((7, 7, 10), (28, 28, 1), 5, 5, 3, key)
    ```
 
 2. ✅ **Build Networks**
@@ -212,9 +355,12 @@ According to [ROADMAP.md](./ROADMAP.md), the following phases are pending:
 - [ ] Integration of all components
 
 ### Phase 7: Additional Network Types
-- [ ] CNN Descriptor and Network
-- [ ] RNN Descriptor and Network
-- [ ] TCNN Descriptor and Network
+- [x] CNN Descriptor (Complete ✓)
+- [x] RNN Descriptor (Complete ✓)
+- [x] TCNN Descriptor (Complete ✓)
+- [ ] CNN Network Implementation
+- [ ] RNN Network Implementation
+- [ ] TCNN Network Implementation
 
 ### Phase 8: Optimization (Week 11)
 - [ ] Performance benchmarks
@@ -231,13 +377,16 @@ nasjax/
 ├── README.md                   ✓ Project overview
 ├── ROADMAP.md                  ✓ Implementation plan
 ├── TRANSFORMATIONS.md          ✓ Technical guide
-├── IMPLEMENTATION_STATUS.md    ✓ This file
+├── IMPLEMENTATION_STATUS.md    ✓ This file (updated)
 ├── nasjax/
 │   ├── __init__.py            ✓ Package init
 │   ├── descriptors/
-│   │   ├── __init__.py        ✓ Descriptor exports
+│   │   ├── __init__.py        ✓ Descriptor exports (updated)
 │   │   ├── base.py            ✓ Base descriptor class
-│   │   └── mlp.py             ✓ MLP descriptor
+│   │   ├── mlp.py             ✓ MLP descriptor
+│   │   ├── cnn.py             ✓ CNN descriptor (NEW)
+│   │   ├── rnn.py             ✓ RNN descriptor (NEW)
+│   │   └── tcnn.py            ✓ TCNN descriptor (NEW)
 │   ├── networks/
 │   │   ├── __init__.py        ✓ Network exports
 │   │   ├── base.py            ✓ Base network utilities
@@ -248,6 +397,13 @@ nasjax/
 ├── tests/
 │   ├── __init__.py            ✓ Test init
 │   ├── test_mlp_descriptor.py ✓ Descriptor tests (95% coverage)
+│   ├── test_mlp_network.py    ✓ Network tests (90% coverage)
+│   ├── test_cnn_descriptor.py ✓ CNN descriptor tests (86% coverage, NEW)
+│   ├── test_rnn_descriptor.py ✓ RNN descriptor tests (94% coverage, NEW)
+│   └── test_tcnn_descriptor.py ✓ TCNN descriptor tests (90% coverage, NEW)
+└── examples/
+    └── minimal_example.py      ✓ Demonstration script
+```
 │   └── test_mlp_network.py    ✓ Network tests (90% coverage)
 └── examples/
     └── minimal_example.py      ✓ Demonstration script
@@ -294,25 +450,28 @@ Based on the roadmap, the next priorities are:
 
 ## 📈 Progress Summary
 
-**Overall Progress:** ~15% of total project
+**Overall Progress:** ~25% of total project
 
 **Completed Phases:**
 - ✅ Phase 1: Foundation and Setup (Week 1) - 100%
-- ✅ Phase 2: Core Descriptors (Weeks 2-3) - 33% (MLP only)
-- ✅ Phase 3: Networks (Weeks 3-4) - 33% (MLP only)
+- ✅ Phase 2: Core Descriptors (Weeks 2-3) - 100% (All 4 descriptor types)
+- ✅ Phase 3: Networks (Weeks 3-4) - 25% (MLP only)
 
 **In Progress:**
-- None (foundation complete, ready for next phase)
+- None (Phase 2 complete, ready for network implementations)
 
-**Next Milestone:** Complete mutation operators and begin evolution engine
+**Next Milestone:** Implement CNN, RNN, and TCNN network classes (Phase 3 continuation)
 
 ---
 
 ## 🧪 Testing Status
 
-**Total Tests:** 47 (all passing ✓)
-- MLPDescriptor tests: 25
-- MLP network tests: 22
+**Total Tests:** 115 (all passing ✓)
+- MLPDescriptor tests: 25 (95% coverage)
+- MLP network tests: 22 (90% coverage)
+- CNNDescriptor tests: 21 (86% coverage) **NEW**
+- RNNDescriptor tests: 24 (94% coverage) **NEW**
+- TCNNDescriptor tests: 23 (90% coverage) **NEW**
 
 **Test Coverage:**
 - Descriptors: ~95%
