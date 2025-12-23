@@ -302,7 +302,8 @@ class TCNNDescriptor(NamedTuple):
                 return False
             if fw < MIN_NUM_FILTERS or fw > self.max_filter:
                 return False
-            if fc < MIN_NUM_CHANNELS or fc > MAX_NUM_CHANNELS:
+            # For TCNN, allow any positive channel count (including 1 for grayscale output)
+            if fc < 1 or fc > MAX_NUM_CHANNELS:
                 return False
 
         # Check stride dimensions
