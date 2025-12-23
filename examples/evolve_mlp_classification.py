@@ -120,7 +120,7 @@ def evolve_mlp(
     y_test,
     population_size=10,
     n_generations=5,
-    max_num_layers=4,
+    max_num_layers=3,
     max_num_neurons=50,
     mutation_prob=0.8,
     seed=42,
@@ -285,8 +285,8 @@ def main():
         y_test=y_test,
         population_size=8,  # Small population for quick execution
         n_generations=5,     # Few generations for demonstration
-        max_num_layers=3,    # Relatively low complexity
-        max_num_neurons=30,  # Small networks
+        max_num_layers=3,    # Relatively low complexity: max 3 hidden layers
+        max_num_neurons=30,  # Small networks: max 30 neurons per layer
         mutation_prob=0.8,
         seed=42,
     )

@@ -222,10 +222,6 @@ def evolve_mlp_for_images(
             
             # Convert fitness to accuracy for display
             accuracy_pct = (1 - fitness) * 100
-            num_params = sum(
-                (descriptor.input_dim if j == 0 else descriptor.dims[j-1]) * descriptor.dims[j]
-                for j in range(len(descriptor.dims))
-            ) + descriptor.dims[-1] * descriptor.output_dim if len(descriptor.dims) > 0 else descriptor.input_dim * descriptor.output_dim
             
             print(f"  Individual {i+1}: Accuracy = {accuracy_pct:.2f}%, "
                   f"Layers = {len(descriptor.dims)}, "
