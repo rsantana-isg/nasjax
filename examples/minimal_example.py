@@ -8,10 +8,14 @@ This script shows how to:
 """
 
 import sys
+import os
 from pathlib import Path
 
 # Add parent directory to path for development (no install needed)
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Force CPU if GPU has issues (you can remove this to use GPU)
+# os.environ['JAX_PLATFORMS'] = 'cpu'
 
 import jax
 import jax.numpy as jnp
