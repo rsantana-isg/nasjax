@@ -42,10 +42,17 @@ This project is being actively developed to port DEATF from TensorFlow/DEAP to J
    - Success criteria
    - Risk mitigation
 
+3. **[ROADMAP_PINNs.md](./ROADMAP_PINNs.md)** - Physics-Informed Neural Networks (PINNs) Evolution
+   - Comprehensive guide for evolving PINN architectures
+   - Integration strategy with NASJAX framework
+   - PDE benchmark selection and implementation phases
+   - API design and usage examples
+
 ### Quick Links
 
 - **Migration from DEATF**: See [TRANSFORMATIONS.md](./TRANSFORMATIONS.md)
 - **Implementation Plan**: See [ROADMAP.md](./ROADMAP.md)
+- **PINN Evolution**: See [ROADMAP_PINNs.md](./ROADMAP_PINNs.md)
 - **Original DEATF**: [github.com/IvanHCenalmor/deatf](https://github.com/IvanHCenalmor/deatf)
 
 ---
@@ -266,6 +273,8 @@ NASJAX is designed for:
 - **Meta-Learning**: Evolving learning algorithms
 - **Generative Models**: Evolving GANs, VAEs, autoencoders
 - **Recurrent Architectures**: Custom RNN/LSTM designs for sequences
+- **Physics-Informed Neural Networks (PINNs)**: Evolving architectures for solving PDEs
+  - See [ROADMAP_PINNs.md](./ROADMAP_PINNs.md) for comprehensive guide
 
 ---
 
