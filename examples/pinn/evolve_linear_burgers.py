@@ -182,7 +182,13 @@ def main():
     )
 
     key, subkey = jax.random.split(key)
-    final_loss = better_evaluator.evaluate(best_descriptor, subkey, train=True)
+    final_loss = better_evaluator.evaluate(
+        best_descriptor,
+        jnp.array([]), jnp.array([]),  # Not used for PINNs
+        jnp.array([]), jnp.array([]),  # Not used for PINNs
+        subkey,
+        train=True
+    )
 
     print(f"   Final physics loss after extended training: {final_loss:.6f}")
     print()

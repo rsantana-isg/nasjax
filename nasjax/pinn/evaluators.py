@@ -38,12 +38,19 @@ class PINNEvaluator:
     Example:
         >>> from nasjax.pinn.benchmarks import LinearBurgersProblem
         >>> from nasjax.descriptors import MLPDescriptor
+        >>> import jax.numpy as jnp
         >>>
         >>> problem = LinearBurgersProblem(c=1.0, nu=0.02)
         >>> evaluator = PINNEvaluator(problem, n_train_iters=500)
         >>>
         >>> descriptor = MLPDescriptor.random_init(2, 1, 3, 32, key)
-        >>> fitness = evaluator.evaluate(descriptor, key)
+        >>> # Empty arrays for x_train, y_train, x_test, y_test (not used by PINN)
+        >>> fitness = evaluator.evaluate(
+        ...     descriptor,
+        ...     jnp.array([]), jnp.array([]),
+        ...     jnp.array([]), jnp.array([]),
+        ...     key
+        ... )
         >>> print(f"Physics loss: {fitness:.6f}")
     """
 
@@ -82,13 +89,25 @@ class PINNEvaluator:
     def evaluate(
         self,
         descriptor: MLPDescriptor,
+        x_train: jnp.ndarray,
+        y_train: jnp.ndarray,
+        x_test: jnp.ndarray,
+        y_test: jnp.ndarray,
         key: jax.random.PRNGKey,
         train: bool = True
     ) -> float:
         """Evaluate a PINN architecture.
 
+        Note: For PINNs, x_train, y_train, x_test, y_test are not used
+        since we generate collocation points from the PDE problem.
+        These parameters are kept for compatibility with the Evolving class.
+
         Args:
             descriptor: Network architecture descriptor
+            x_train: Not used (kept for compatibility)
+            y_train: Not used (kept for compatibility)
+            x_test: Not used (kept for compatibility)
+            y_test: Not used (kept for compatibility)
             key: JAX random key
             train: Whether to train before evaluation (if False, evaluate random init)
 
@@ -203,13 +222,24 @@ class PINNEvaluator:
     def evaluate_population(
         self,
         descriptors: list[MLPDescriptor],
+        x_train: jnp.ndarray,
+        y_train: jnp.ndarray,
+        x_test: jnp.ndarray,
+        y_test: jnp.ndarray,
         key: jax.random.PRNGKey,
         train: bool = True
     ) -> list[float]:
         """Evaluate multiple descriptors.
 
+        Note: For PINNs, x_train, y_train, x_test, y_test are not used.
+        They are kept for compatibility with the standard Evaluator interface.
+
         Args:
             descriptors: List of descriptors to evaluate
+            x_train: Not used (kept for compatibility)
+            y_train: Not used (kept for compatibility)
+            x_test: Not used (kept for compatibility)
+            y_test: Not used (kept for compatibility)
             key: JAX random key
             train: Whether to train before evaluation
 
@@ -218,13 +248,18 @@ class PINNEvaluator:
 
         Example:
             >>> descriptors = [MLPDescriptor.random_init(...) for _ in range(10)]
-            >>> fitnesses = evaluator.evaluate_population(descriptors, key)
+            >>> fitnesses = evaluator.evaluate_population(
+            ...     descriptors, jnp.array([]), jnp.array([]),
+            ...     jnp.array([]), jnp.array([]), key
+            ... )
         """
         keys = jax.random.split(key, len(descriptors))
         fitnesses = []
 
         for desc, k in zip(descriptors, keys):
-            fitness = self.evaluate(desc, k, train=train)
+            fitness = self.evaluate(
+                desc, x_train, y_train, x_test, y_test, k, train=train
+            )
             fitnesses.append(fitness)
 
         return fitnesses
