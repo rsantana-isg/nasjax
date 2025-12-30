@@ -7,8 +7,15 @@ This script shows how to:
 4. Use JAX transformations (jit, vmap)
 """
 
+import sys
+from pathlib import Path
+
+# Add parent directory to path for development (no install needed)
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import jax
 import jax.numpy as jnp
+import equinox as eqx
 
 from nasjax.descriptors import MLPDescriptor
 from nasjax.networks import MLP
@@ -80,11 +87,12 @@ def main():
     print("\n6. Computing gradients...")
 
     def loss_fn(net, x, y):
-        pred = net(x, inference=True)
+        pred = net(x, k3, inference=True)
         return jnp.mean((pred - y) ** 2)
 
     y_target = jnp.zeros(10)
-    grads = jax.grad(loss_fn)(network, x_single, y_target)
+    # Use Equinox's filter_grad to handle the module correctly
+    grads = eqx.filter_grad(loss_fn)(network, x_single, y_target)
     print(f"   Gradients computed successfully!")
     print(f"   First layer weight gradient shape: {grads.layers[0].weight.shape}")
 

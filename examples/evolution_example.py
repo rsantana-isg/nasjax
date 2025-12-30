@@ -8,6 +8,12 @@ This example demonstrates the full evolution pipeline:
 5. Using the best network
 """
 
+import sys
+from pathlib import Path
+
+# Add parent directory to path for development (no install needed)
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import jax
 import jax.numpy as jnp
 from sklearn.datasets import make_classification
