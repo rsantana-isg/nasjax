@@ -78,8 +78,7 @@ For GPU acceleration (recommended for production use):
 pip install -r requirements.txt
 
 # CUDA 11.x (for older GPUs)
-# Edit requirements.txt: replace jax[cuda12_pip] with jax[cuda11_pip]
-pip install -r requirements.txt
+pip install -r requirements-cuda11.txt
 
 # CPU-only (for testing or systems without GPU)
 pip install -r requirements-cpu.txt
@@ -93,8 +92,7 @@ pip install -r requirements-cpu.txt
 ### Dependencies
 
 **Core:**
-- `jax >= 0.4.20` (with CUDA support for GPU)
-- `jaxlib >= 0.4.20` (CUDA-specific version for GPU)
+- `jax >= 0.4.20` (automatically installs appropriate jaxlib for GPU/CPU)
 - `equinox >= 0.11.0`
 - `optax >= 0.1.7`
 - `jaxtyping >= 0.2.0`

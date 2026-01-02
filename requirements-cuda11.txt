@@ -1,0 +1,24 @@
+# Requirements for NASJAX with GPU support (CUDA 11.x)
+# Use this for older GPUs that require CUDA 11.x
+
+# Core JAX with CUDA 11.x support
+# Note: Installing jax[cuda11_pip] will automatically install the appropriate jaxlib
+jax[cuda11_pip]>=0.4.20
+
+# Deep learning framework
+equinox>=0.11.0
+
+# Optimization library
+optax>=0.1.7
+
+# Type checking and validation
+jaxtyping>=0.2.0
+
+# Scientific computing
+numpy>=1.24.0
+
+# Machine learning utilities
+scikit-learn>=1.3.0
+
+# Progress bars
+tqdm>=4.65.0

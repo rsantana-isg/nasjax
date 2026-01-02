@@ -1,6 +1,6 @@
 # Requirements for NASJAX with GPU support
 # For CUDA 12.x support (recommended for modern GPUs)
-# For CUDA 11.x, replace jax[cuda12_pip] with jax[cuda11_pip]
+# For CUDA 11.x support, use requirements-cuda11.txt instead
 
 # Core JAX with CUDA support
 # Note: Installing jax[cuda12_pip] will automatically install the appropriate jaxlib
