@@ -10,6 +10,11 @@ from pathlib import Path
 # Add parent directory to path for development
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+# Force CPU if GPU/CUDA issues (comment out to use GPU)
+# Uncomment the line below if you encounter CUDA/CuDNN errors
+# import os
+# os.environ['JAX_PLATFORMS'] = 'cpu'
+
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
@@ -271,6 +276,12 @@ def main():
     print("NASJAX - PINN Solution Visualization")
     print("=" * 70)
     print()
+
+    # Display platform info
+    print(f"🖥️  Platform: {jax.devices()[0].platform.upper()}")
+    print(f"   Device: {jax.devices()[0].device_kind}")
+    print()
+
     print("This script demonstrates various visualization capabilities")
     print("for Physics-Informed Neural Networks.")
     print()

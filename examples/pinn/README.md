@@ -184,14 +184,31 @@ print(f"PDE Residual: {metrics['pde_residual']:.6f}")
 
 ## Common Issues
 
+### GPU/CUDA Errors
+
+**Issue:** "DNN library initialization failed" or CuDNN version mismatch
+- **Quick Fix:** Run with CPU mode: `JAX_PLATFORMS=cpu python evolve_linear_burgers.py`
+- **Details:** See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for complete GPU setup instructions
+
+### Performance Issues
+
 **Issue:** Evolution is slow
 - **Solution:** Reduce `n_train_iters`, `pop_size`, or `n_collocation`
+- **Or:** Use GPU if available (10-100x faster than CPU)
 
 **Issue:** High physics loss
 - **Solution:** Increase `n_train_iters`, try different learning rates, or allow larger architectures
 
 **Issue:** Networks not improving
 - **Solution:** Increase `mutation_prob`, reduce `elitism`, or increase `pop_size`
+
+### For More Help
+
+See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for:
+- Complete GPU/CUDA troubleshooting
+- Memory optimization tips
+- Platform-specific notes (Linux/macOS/Windows)
+- Verification and testing procedures
 
 ## Next Steps
 
