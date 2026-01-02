@@ -69,19 +69,40 @@ cd nasjax
 pip install -e ".[dev]"
 ```
 
+### Installation with GPU Support
+
+For GPU acceleration (recommended for production use):
+
+```bash
+# CUDA 12.x (recommended for modern GPUs)
+pip install -r requirements.txt
+
+# CUDA 11.x (for older GPUs)
+# Edit requirements.txt: replace jax[cuda12_pip] with jax[cuda11_pip]
+pip install -r requirements.txt
+
+# CPU-only (for testing or systems without GPU)
+pip install -r requirements-cpu.txt
+```
+
+**GPU Requirements:**
+- NVIDIA GPU with CUDA support
+- CUDA 12.x or 11.x installed
+- cuDNN compatible with your CUDA version
+
 ### Dependencies
 
 **Core:**
-- `jax >= 0.4.20`
-- `jaxlib >= 0.4.20`
+- `jax >= 0.4.20` (with CUDA support for GPU)
+- `jaxlib >= 0.4.20` (CUDA-specific version for GPU)
 - `equinox >= 0.11.0`
 - `optax >= 0.1.7`
-- `chex >= 0.1.8`
 - `jaxtyping >= 0.2.0`
 
 **Utilities:**
 - `numpy >= 1.24.0`
 - `scikit-learn >= 1.3.0`
+- `tqdm >= 4.65.0`
 
 ---
 
