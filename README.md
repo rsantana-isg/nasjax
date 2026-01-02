@@ -170,6 +170,148 @@ evolution = Evolving(
 
 ---
 
+## 🔬 Physics-Informed Neural Networks (PINNs)
+
+NASJAX includes full support for evolving Physics-Informed Neural Networks to solve partial differential equations (PDEs). PINNs encode physical laws directly in the loss function, allowing neural networks to solve differential equations without requiring large amounts of simulation data.
+
+### Quick PINN Example
+
+```python
+import jax
+import jax.numpy as jnp
+from nasjax.pinn import LinearBurgersProblem, PINNEvaluator
+from nasjax.evolution import Evolving, EvolvingConfig
+
+# 1. Define the PDE problem
+problem = LinearBurgersProblem(
+    c=1.0,                    # Convection coefficient
+    nu=0.02,                  # Diffusion coefficient
+    n_collocation=2000,       # Number of PDE residual points
+    n_ic=100,                 # Initial condition points
+)
+
+# 2. Create PINN evaluator
+evaluator = PINNEvaluator(
+    problem=problem,
+    n_train_iters=200,        # Training iterations per network
+    learning_rate=1e-3,
+)
+
+# 3. Configure evolution
+config = EvolvingConfig(
+    pop_size=20,
+    n_generations=30,
+    mutation_prob=0.8,
+    elitism=2
+)
+
+# 4. Run evolution to find optimal PINN architecture
+evolving = Evolving(
+    input_dim=2,              # (x, t) coordinates
+    output_dim=1,             # u(x,t) solution
+    max_num_layers=5,
+    max_num_neurons=64,
+    config=config,
+    evaluator=evaluator
+)
+
+key = jax.random.PRNGKey(42)
+population, log = evolving.evolve(
+    x_train=jnp.array([]),
+    y_train=jnp.array([]),
+    x_test=jnp.array([]),
+    y_test=jnp.array([]),
+    key=key
+)
+
+# 5. Get best architecture
+best = population.get_best(1)[0]
+print(f"Best architecture: {best.descriptor.dims}")
+print(f"Physics loss: {best.fitness:.6f}")
+```
+
+### Available PDE Problems
+
+- **Linear Burgers Equation**: `∂u/∂t + c·∂u/∂x - ν·∂²u/∂x² = 0`
+- **Convection-Diffusion**: `v·∂u/∂x = k·∂²u/∂x²`
+- **Custom PDEs**: Easily define your own PDE problems
+
+### PINN Examples
+
+The `examples/pinn/` directory includes complete working examples:
+
+1. **`evolve_linear_burgers.py`** - Main evolution example for Linear Burgers equation
+2. **`evolve_convection_diffusion.py`** - Evolution for Convection-Diffusion equation
+3. **`compare_architectures.py`** - Compare hand-designed vs. evolved architectures
+4. **`visualize_solutions.py`** - Visualize PINN solutions with plots
+5. **`validate_solution.py`** - Comprehensive validation against analytical solutions
+
+### Running PINN Examples
+
+```bash
+cd examples/pinn
+
+# Evolve PINN architectures for Linear Burgers equation
+python evolve_linear_burgers.py
+
+# Compare different architectures
+python compare_architectures.py
+
+# Visualize solutions
+python visualize_solutions.py
+
+# Validate against analytical solutions
+python validate_solution.py
+```
+
+### Visualization and Validation
+
+NASJAX provides built-in tools for PINN visualization and validation:
+
+```python
+from nasjax.pinn.visualization import (
+    visualize_pinn_solution_2d,
+    visualize_initial_condition,
+    compare_with_analytical
+)
+from nasjax.pinn.validation import (
+    validate_solution,
+    compute_l2_error,
+    compute_pde_residual
+)
+
+# Visualize solution
+visualize_pinn_solution_2d(network, problem, key, filename='solution.png')
+
+# Validate against analytical solution
+metrics = validate_solution(network, problem, key)
+print(f"L2 Error: {metrics['l2_error']:.6f}")
+print(f"PDE Residual: {metrics['pde_residual']:.6f}")
+```
+
+### Why Evolve PINN Architectures?
+
+Traditional PINN training faces several challenges that neuroevolution can address:
+
+- **Architecture Sensitivity**: PINN performance is highly sensitive to network depth and width
+- **Optimization Challenges**: Physics loss landscapes are non-convex with many local minima
+- **Hyperparameter Tuning**: Manual tuning of architecture and loss weights is tedious
+- **Problem-Specific Architectures**: Different PDEs may require different optimal architectures
+
+NASJAX automatically discovers optimal PINN architectures by:
+- Exploring the architecture space in parallel
+- Evolving activation functions and network topology
+- Finding architectures that avoid poor local minima
+- Co-evolving architecture and training hyperparameters
+
+### Learn More
+
+For comprehensive documentation on PINN evolution in NASJAX:
+- See [ROADMAP_PINNs.md](./ROADMAP_PINNs.md) for full implementation details
+- See [examples/pinn/README.md](./examples/pinn/README.md) for examples and tutorials
+
+---
+
 ## 🏗️ Architecture Overview
 
 ### Conceptual Shift: DEATF → NASJAX
