@@ -65,7 +65,7 @@ pip install nasjax
 
 # Or from source (development)
 git clone https://github.com/your-org/nasjax.git
-cd nasjax
+--cd nasjax
 pip install -e ".[dev]"
 ```
 

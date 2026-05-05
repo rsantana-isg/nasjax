@@ -1,0 +1,203 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+
+\title{Parameters which affect BPINN}
+\author{Josu Iturralde Balenciaga}
+\date{April 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Prior type}
+
+The formula minimized in Variational Inference is the following:
+
+$$
+-ELBO = \log{q_{\phi}(\theta)} - \log {p(\theta)} - \log{{p(D\mid\theta)}}
+$$
+where $\log{p(\theta)}$ represents the log probability that the weights and biases of the neural network satisfy the prior constraints.
+
+In my program, three priors can be chosen: a Gaussian distribution, a Laplacian distribution, and a Spike and Slab which is a combination of two Gaussian distributions.
+
+Each prior type has its hyperparameters:
+
+1. Gaussian: Mean and variance
+2. Laplacian: Beta and mean
+3. Spike and Slab: Mean and variance of distribution 1. Mean and variance of distribution 2. Parameter that weights the contribution of each distribution in the sum.
+
+Currently in the code, I initialize the priors using a string. "SnS" for Spike and Slab, "Laplace" for Laplacian prior, or any other string for Gaussian prior.
+
+I do not change the hyperparameters of each distribution. But it could be done.
+
+\section{Activation function}
+
+It is the activation function that introduces non-linearity at the output of each layer, except the last one. In PINN and B-PINN papers, the hyperbolic tangent (tanh()) is chosen, since in these networks second-order derivatives are computed, where using ReLUs would yield zero second-order derivatives.
+
+\section{Width and depth of the neural network}
+
+The greater the depth and width of the network, the greater the expressiveness, but the more computation time per forward pass.
+
+For example, for the Allen-Cahn equation, the architectures that worked for Burgers' equation did not have enough expressiveness; it required more neurons per layer.
+
+With more neurons, in the ELBO formula the terms of the log variational posterior ($\log{q_{\phi}(\theta)}$) and the log prior ($\log p(\theta)$) are sums of more values. Since each weight and bias has its corresponding term for the log variational posterior and the log prior. Therefore we should see the relationship of these terms with respect to the log likelihood terms ($\log p(D\mid\theta)$).
+
+In my program I input it as a list. For example, [2,50,50,50,1].
+
+\section{Number of epochs}
+
+The number of epochs dictates how many training iterations are performed.
+
+It is a very important variable, since more iterations generally lead to better convergence, at least when training was governed by the likelihood terms, when the sigmas were very small.
+
+It dictates the training time; more epochs, the training will be longer, but convergence will be better. In my opinion, I think it is worth going for long training runs, since we are talking about less than a second per iteration, so far at least.
+
+\section{Number of collocation points}
+
+Extremely important parameter, since it represents the number of terms summed in each likelihood, which would be represented by $N_m$ in the following formula:
+
+$$
+p(D|\theta) = \prod_{m}^{M}\prod_{n=1}^{N_m} p_n(D_m|\theta)
+$$
+
+$$
+\log p(D|\theta) = \sum_{m}^{M} \sum_{n=1}^{N_m} \log p_n(D_{m}|\theta) \;\;\;m\in \{R, BC, IC\}
+$$
+
+The larger the number of collocation points, the more sums in the likelihood terms, and the total of the likelihood terms is larger, giving more importance to the data.
+
+I need to run tests, but I believe it can serve as a dynamic weight within the likelihoods. Making the training converge to terms where we introduce more collocation points.
+
+I sample the points at the beginning and use the same ones throughout training, both in quantity and values. I have tried resampling, changing the values of these collocation points, without changing the quantity each epoch.
+
+\section{Likelihood sigmas}
+
+Extremely important parameter. It represents the uncertainty associated with the data.
+If we assume that the data have a Gaussian distribution, the log likelihood is given by the following formula:
+
+$$
+\log p(D_{}| \theta)=
+-\frac{N_{}}{2}\log (2\pi\sigma^2_{})-\frac{1}{2\sigma^2_{}}\sum_{i=1}^{N_{}}\bigl|\mathcal{RESIDUAL}[u_\theta](x_{}^{i},t^i)\bigr|^2
+$$
+
+The first term is a constant depending on the logarithm of the square of the standard deviation defined by the user. In the second term, the square of the standard deviation divides the square of the obtained residual. Recall that the residual is the difference between the network's output and the expected output.
+
+The role it plays in the second term is very important since it weights the residual by the square of its value, in this case dividing it.
+
+In my implementation I define the sigmas at the beginning, and they are static during training.
+
+\section{Local lambdas}
+
+I define as local lambda the weighting weights I use in each likelihood term, for each term obtained from each collocation point.
+So far I have proposed two versions of Residual Based Attention.
+
+One considering the obtained residual, and multiplying that same residual by a lambda. Assuming that this likelihood has a variance of value $\frac{\sigma}{\lambda}$
+$$
+p(y\,|\,\hat{y}_\theta) =
+\mathcal{N}\bigl(y;\,\hat{y}_\theta,(\frac{\sigma}{\lambda})^2 I\bigr),
+\qquad
+\log p(y\,|\,\hat{y}_\theta)
+= \sum_{n=1}^N -\frac{1}{2} \log (2\pi\frac{\sigma^2}{\lambda_n^2}) - \frac{1}{2\sigma^2}(\lambda_n \cdot \mathcal{RESIDUAL}[u_\theta](x_{}^{i},t^i))^2
+$$
+
+The other approach considers an optimal likelihood, and multiplies the log likelihood of each collocation point by a lambda that weights the likelihoods, based on how far they deviate from that optimal likelihood.
+
+Using this $\lambda_{n,m}$ the total log likelihood would be:
+
+$$
+\log p(D|\theta) = \sum_{m}^{M} \sum_{n=1}^{N_m} \lambda_{n,m}\,\log p_n(D_{m}|\theta) \;\;\;m\in \{PDE, BC, IC\}
+$$
+
+$$
+\log p(D|\theta) = \sum_{n=1}^{N_{PDE}} \lambda_{n,PDE}\,\log p_n(D_{PDE}|\theta) \, + 
+\sum_{n=1}^{N_{BC}} \lambda_{n,BC}\,\log p_n(D_{BC}|\theta) \, +
+\sum_{n=1}^{N_{IC}} \lambda_{n,IC}\,\log p_n(D_{IC}|\theta)
+$$
+
+These approaches balance the log likelihoods within each parameter (PDE, BC and IC), giving more importance in the loss to those collocation points where the residual (1st approach) or the log likelihood (2nd approach) is larger.
+
+As of today, I am using an adaptation formula for these $\lambda$s that makes their value between (0,1). This makes them weighted among themselves, but also makes the likelihood terms lose value compared to the log prior and log variational posterior. In the future, another formula may need to be applied for adapting the lambdas.
+
+In my implementation, I choose which approach to use, either 'None', 'Residual RBA' or 'Likelihood RBA'.
+
+\section{Global lambdas}
+
+I define as global lambdas those that weight the total terms of log likelihood, log prior or log variational posterior before they are introduced into the ELBO, and optimized at each iteration.
+
+$$
+-ELBO = \lambda_{VarPosterior}\log{q_{\phi}(\theta)} - \lambda_{Prior}\log {p(\theta)} - \lambda_{Lik}\log{{p(D\mid\theta)}}
+$$
+
+It is in this lambda where I have tried dividing the terms by the number of network parameters in the case of the log variational posterior and the log prior, and by the number of collocation points in the case of the likelihood.
+
+It is also here where I tried dividing the total values by the total values from the previous epoch.
+
+There are many approaches in PINNs that I have not yet seen for B-PINNs in Variational Inference. All of these would cause the obtained posterior not to be the true posterior but a tempered one.
+
+In my implementation, I initialize with value 1 at the beginning and they are not changed during training. But different weighting strategies could be considered.
+
+\section{Modified MLP}
+
+It consists of adding residual connections between layers, using extra weights (U and V). In this case, these weights are normal distributions of mean and variance that are initialized and trained during training.
+
+It adds complexity to the network, more computation time but according to the results obtained, it reduces the noise of the likelihood quite a bit. I have not yet quantified its real influence, but for example in the Allen-Cahn equation I did not obtain results comparable to the ground truth without using the modified MLP.
+
+In my implementation I use a string that has options 'N'o, or 'Y'es. Depending on the answer, the network is initialized without or with these extra weights and residual connections.
+
+It forces the network to have a uniform size, that is, the hidden layers have the same number of neurons.
+
+\section{Hard-coded BCs}
+
+It consists of using sinusoidal transformations of the network input so that the network respects the periodicity of the boundary conditions.
+
+I have also seen a paper that does something similar to impose first-order Neumann boundary conditions.
+
+In both cases, sinusoidal transformations of the network input are used, thus modifying the input shape of the network, making the network input have a large shape for many inputs or for high complexity of the transformations.
+
+The use of hard-coded boundary conditions reduces the complexity of the optimization algorithm since it reduces boundary condition terms from the total likelihood. It is the input transformations that force the conditions to be satisfied, not the likelihood terms.
+
+\section{Optimization paradigm}
+
+There are several strategies used to update the weights and biases of each layer. For example, using second-order optimizers or combining them with first-order optimizers.
+
+So far, I have only used the first-order Adam optimizer.
+
+Combined strategies with L-BFGS (second-order optimizer) could be considered.
+
+\section{Number of MC samples per epoch}
+
+For the computation of the ELBO, a Monte Carlo sampling of the log prior, log variational posterior and log likelihoods is performed:
+
+$$
+ELBO = E_{q_\phi} \Big[\log\;p(D|\theta) + \log\;p(\theta) - \log\;q_\phi(\theta)\Big]
+$$
+
+An approximation of the expectancy could be achieved by using Monte Carlo samples:
+
+$$
+E_{q_\phi} \Big[\log\;p(D|\theta) + \log\;p(\theta) - \log\;q_\phi(\theta)\Big] \approx
+\frac{1}{K} \sum_{k=1}^K \Big[\log\;p(D|\theta^{(k)}) + \log\;p(\theta^{(k)}) - \log\;q_\phi(\theta^{(k)})\Big]
+$$
+
+In my implementations I can choose the value of $K$. As many computations of total log likelihood, total log prior and total log variational posterior will be performed as $K$, and then the averages of each iteration will be used to update the weights and biases.
+
+In my experiments, I have seen that the variance associated with the network output, once the model is trained, decreases when using K=3 instead of K=1.
+
+However, this entails a huge computational cost since the same operations are performed K times.
+
+\section{Number of batches per epoch}
+
+Mini-batching could be used during training to optimize GPUs or improve convergence, but so far I have always worked with full batches.
+
+I have worked with full batches to use RBA, which is based on improving the residuals in areas with larger error from the previous epoch, so the network inputs should be kept fixed. For this, mini-batching or resampling between epochs cannot be used.
+
+\section{Resampling strategies each epoch}
+
+It consists of resampling the network input data at each epoch. The idea is to reduce overfitting since the input data change at each epoch, and the network cannot gain too much confidence in what it learns.
+
+I have hardly used it so far, and it will surely be a source of variance, but I have no experiments to support it.
+
+It goes against the use of RBA, because the latter requires repeated inputs in order to adjust the lambdas of the current epoch using information from the previous epoch.
+
+\end{document}
+

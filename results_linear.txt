@@ -1,0 +1,25 @@
+======================================================================
+NASJAX - Evolving PINN Architectures for Linear Burgers Equation
+======================================================================
+
+🖥️  Platform: GPU
+   Device: NVIDIA RTX PRO 500 Blackwell Generation Laptop GPU
+
+📊 Step 1: Defining Linear Burgers equation problem...
+   PDE: ∂u/∂t + 1.0·∂u/∂x - 0.02·∂²u/∂x² = 0
+   Domain: x ∈ [-1.5, 4.5], t ∈ [0.0, 2.0]
+   Initial condition: u(x,0) = 10·exp(-(2x)²)
+
+⚙️  Step 2: Configuring PINN evaluator...
+   Training iterations: 200
+   Learning rate: 0.001
+   Optimizer: adam
+
+🧬 Step 3: Configuring evolution parameters...
+   Population size: 8
+   Generations: 5
+   Mutation probability: 0.9
+   Elitism: 2
+
+🚀 Step 4: Running evolutionary algorithm...
+
