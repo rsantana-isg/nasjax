@@ -49,6 +49,7 @@ from nasjax.bpinn import (
 layer_specs = [
     [50, "tanh", "Gaussian", {"mean": 0.0, "sigma": 1.0}],   # hidden 1
     [50, "tanh", "Gaussian", {"mean": 0.0, "sigma": 1.0}],   # hidden 2
+    [25, "relu", "Gaussian", {"mean": 0.0, "sigma": 1.0}],   # hidden 3    
     [1,  None,  "Gaussian", {"mean": 0.0, "sigma": 1.0}],   # output (linear)
 ]
 
@@ -80,7 +81,8 @@ config = BPINNConfig(
 
     # --- Architecture (Section: Width and depth) ---------------------------
     layer_specs=layer_specs,
-    enhanced_mlp=True,         # Modified MLP with U/V residual connections
+    #enhanced_mlp=True,         # Modified MLP with U/V residual connections
+    enhanced_mlp=False,         # Modified MLP with U/V residual connections    
 
     # --- Hard-coded BCs (Section: Hard-coded BCs) --------------------------
     # Fourier embedding enforces periodic BCs automatically.
