@@ -212,7 +212,46 @@ print(f"  Relative L2 error: {rel_l2:.4e}")
 print(f"  Mean posterior std: {float(jnp.mean(u_std)):.4e}")
 
 # ============================================================================
-# 7.  Serialise / deserialise config (for reproducibility / search)
+# 7.  Visualization
+# ============================================================================
+import os
+
+from nasjax.visualization import (
+    predict_on_grid,
+    plot_burgers_slices,
+    plot_burgers_heatmaps,
+    save_burgers_npz,
+)
+
+print()
+print("Generating visualizations …")
+x_vec, t_vec, u_exact = problem.load_reference_grid()
+
+# Prediction closure: MC posterior mean over n_samples weight samples
+_n_vis_samples = 50
+_vis_keys = jax.random.split(sample_key, _n_vis_samples)
+
+def bpinn_predict(x, t):
+    def one_sample(sk):
+        params, _, _ = result.model.sample_params(sk, sample=True)
+        return result.model.out_u_only(x, t, params).ravel()
+    preds = jax.vmap(one_sample)(_vis_keys)   # (n_samples, N)
+    return np.array(jnp.mean(preds, axis=0))
+
+u_pred_grid = predict_on_grid(bpinn_predict, x_vec, t_vec)
+
+os.makedirs("results", exist_ok=True)
+save_burgers_npz(x_vec, t_vec, u_exact, u_pred_grid,
+                 model_name="BPINN", path="results/bpinn_burgers.npz")
+plot_burgers_slices(x_vec, t_vec, u_exact, u_pred_grid,
+                    model_name="BPINN",
+                    save_path="results/bpinn_burgers_slices.pdf")
+plot_burgers_heatmaps(x_vec, t_vec, u_exact, u_pred_grid,
+                      model_name="BPINN",
+                      save_path="results/bpinn_burgers_heatmap.pdf")
+
+# ============================================================================
+# 9.  Serialise / deserialise config (for reproducibility / search)
 # ============================================================================
 import json
 
@@ -223,7 +262,7 @@ print()
 print("Config round-trip serialisation: OK")
 
 # ============================================================================
-# 8.  Using BPINNEvaluator for evolutionary search
+# 10. Using BPINNEvaluator for evolutionary search
 # ============================================================================
 from nasjax.bpinn import BPINNEvaluator
 

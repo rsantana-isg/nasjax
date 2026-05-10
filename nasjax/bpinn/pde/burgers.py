@@ -183,6 +183,25 @@ class BurgersProblem(PDEProblem):
         }
 
     # -----------------------------------------------------------------------
+    # Reference grid (for visualization)
+    # -----------------------------------------------------------------------
+
+    def load_reference_grid(self):
+        """Return the reference solution on the full (x, t) mesh.
+
+        Returns:
+            x_vec:   (Nx,) numpy array of spatial coordinates.
+            t_vec:   (Nt,) numpy array of time coordinates.
+            u_exact: (Nt, Nx) numpy array — row i is the solution at t_vec[i].
+        """
+        import scipy.io
+        mat = scipy.io.loadmat(self.data_path)
+        x_vec = mat["x"].flatten()          # (Nx,)
+        t_vec = mat["t"].flatten()          # (Nt,)
+        u_exact = np.real(mat["usol"]).T    # (Nt, Nx)
+        return x_vec, t_vec, u_exact
+
+    # -----------------------------------------------------------------------
     # Metadata
     # -----------------------------------------------------------------------
 

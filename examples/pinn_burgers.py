@@ -153,13 +153,41 @@ key = jax.random.PRNGKey(config.seed + 1)
 data_key, _ = jax.random.split(key)
 batch_data = problem.prepare_data(data_key, config)
 
-u_pred = result.model.out_u_only(batch_data["x_data"], batch_data["t_data"]).ravel()
+u_pred_flat = result.model.out_u_only(batch_data["x_data"], batch_data["t_data"]).ravel()
 u_true = batch_data["u_data"].ravel()
-rel_l2 = float(jnp.linalg.norm(u_pred - u_true) / jnp.linalg.norm(u_true))
+rel_l2 = float(jnp.linalg.norm(u_pred_flat - u_true) / jnp.linalg.norm(u_true))
 print(f"  Relative L2 error: {rel_l2:.4e}")
 
 # ============================================================================
-# 7.  Config serialisation round-trip
+# 7.  Visualization
+# ============================================================================
+from nasjax.visualization import (
+    predict_on_grid,
+    plot_burgers_slices,
+    plot_burgers_heatmaps,
+    save_burgers_npz,
+)
+
+print()
+print("Generating visualizations …")
+x_vec, t_vec, u_exact = problem.load_reference_grid()
+
+# Prediction closure: takes (N,1) JAX arrays, returns (N,) numpy
+pinn_predict = lambda x, t: np.array(result.model.out_u_only(x, t)).ravel()
+u_pred_grid = predict_on_grid(pinn_predict, x_vec, t_vec)
+
+os.makedirs("results", exist_ok=True)
+save_burgers_npz(x_vec, t_vec, u_exact, u_pred_grid,
+                 model_name="PINN", path="results/pinn_burgers.npz")
+plot_burgers_slices(x_vec, t_vec, u_exact, u_pred_grid,
+                    model_name="PINN",
+                    save_path="results/pinn_burgers_slices.pdf")
+plot_burgers_heatmaps(x_vec, t_vec, u_exact, u_pred_grid,
+                      model_name="PINN",
+                      save_path="results/pinn_burgers_heatmap.pdf")
+
+# ============================================================================
+# 9.  Config serialisation round-trip
 # ============================================================================
 config_json = json.dumps(config.to_dict(), indent=2, default=str)
 config_restored = PINNConfig.from_dict(json.loads(config_json))
@@ -168,7 +196,7 @@ print()
 print("Config round-trip serialisation: OK")
 
 # ============================================================================
-# 8.  Using PINNEvaluator for NAS / evolutionary search
+# 10. Using PINNEvaluator for NAS / evolutionary search
 # ============================================================================
 print()
 print("PINNEvaluator demo …")

@@ -178,7 +178,40 @@ rel_l2 = relative_l2_error(result.model, batch_data)
 print(f"  Relative L2 error: {rel_l2:.4e}")
 
 # ============================================================================
-# 7.  Config serialisation round-trip
+# 7.  Visualization
+# ============================================================================
+import os
+
+from nasjax.visualization import (
+    predict_on_grid,
+    plot_burgers_slices,
+    plot_burgers_heatmaps,
+    save_burgers_npz,
+)
+
+print()
+print("Generating visualizations …")
+x_vec, t_vec, u_exact = problem.load_reference_grid()
+
+# PIKAN input convention: (N, 2) with column 0 = t, column 1 = x
+def pikan_predict(x, t):
+    inp = jnp.concatenate([t, x], axis=1)   # (N, 2): [:, 0]=t, [:, 1]=x
+    return np.array(result.model(inp)).ravel()
+
+u_pred_grid = predict_on_grid(pikan_predict, x_vec, t_vec)
+
+os.makedirs("results", exist_ok=True)
+save_burgers_npz(x_vec, t_vec, u_exact, u_pred_grid,
+                 model_name="PIKAN", path="results/pikan_burgers.npz")
+plot_burgers_slices(x_vec, t_vec, u_exact, u_pred_grid,
+                    model_name="PIKAN",
+                    save_path="results/pikan_burgers_slices.pdf")
+plot_burgers_heatmaps(x_vec, t_vec, u_exact, u_pred_grid,
+                      model_name="PIKAN",
+                      save_path="results/pikan_burgers_heatmap.pdf")
+
+# ============================================================================
+# 9.  Config serialisation round-trip
 # ============================================================================
 config_json = json.dumps(config.to_dict(), indent=2, default=str)
 config_restored = PIKANConfig.from_dict(json.loads(config_json))
@@ -187,7 +220,7 @@ print()
 print("Config round-trip serialisation: OK")
 
 # ============================================================================
-# 8.  Using PIKANEvaluator for NAS / evolutionary search
+# 10. Using PIKANEvaluator for NAS / evolutionary search
 # ============================================================================
 print()
 print("PIKANEvaluator demo …")

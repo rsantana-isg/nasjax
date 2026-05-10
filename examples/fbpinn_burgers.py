@@ -171,7 +171,37 @@ rel_l2 = relative_l2_error(result.model, result.params, batch_data)
 print(f"  Relative L2 error: {rel_l2:.4e}")
 
 # ============================================================================
-# 8.  Config serialisation round-trip
+# 8.  Visualization
+# ============================================================================
+from nasjax.visualization import (
+    predict_on_grid,
+    plot_burgers_slices,
+    plot_burgers_heatmaps,
+    save_burgers_npz,
+)
+
+print()
+print("Generating visualizations …")
+x_vec, t_vec, u_exact = problem.load_reference_grid()
+
+# FBPINN prediction: model.out_u_only(params, x, t)
+fbpinn_predict = lambda x, t: np.array(
+    result.model.out_u_only(result.params, x, t)
+).ravel()
+u_pred_grid = predict_on_grid(fbpinn_predict, x_vec, t_vec)
+
+os.makedirs("results", exist_ok=True)
+save_burgers_npz(x_vec, t_vec, u_exact, u_pred_grid,
+                 model_name="FBPINN", path="results/fbpinn_burgers.npz")
+plot_burgers_slices(x_vec, t_vec, u_exact, u_pred_grid,
+                    model_name="FBPINN",
+                    save_path="results/fbpinn_burgers_slices.pdf")
+plot_burgers_heatmaps(x_vec, t_vec, u_exact, u_pred_grid,
+                      model_name="FBPINN",
+                      save_path="results/fbpinn_burgers_heatmap.pdf")
+
+# ============================================================================
+# 10. Config serialisation round-trip
 # ============================================================================
 config_json = json.dumps(config.to_dict(), indent=2, default=str)
 config_restored = FBPINNConfig.from_dict(json.loads(config_json))
@@ -181,7 +211,7 @@ print()
 print("Config round-trip serialisation: OK")
 
 # ============================================================================
-# 9.  Using FBPINNEvaluator for NAS / evolutionary search
+# 11. Using FBPINNEvaluator for NAS / evolutionary search
 # ============================================================================
 print()
 print("FBPINNEvaluator demo …")
