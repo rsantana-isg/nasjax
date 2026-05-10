@@ -1,8 +1,8 @@
 """NASJAX - Neural Architecture Search with JAX
 
 A neuroevolutionary framework for neural architecture search built on JAX and
-Equinox.  Includes a fully-parameterised Bayesian PINN (BPINN) sub-package for
-solving and optimising physics-informed neural networks.
+Equinox.  Includes fully-parameterised physics-informed neural network
+sub-packages for BPINNs, PINNs, PIKANs, and FBPINNs.
 """
 
 __version__ = "0.1.0"
@@ -12,10 +12,16 @@ __version__ = "0.1.0"
 # from .descriptors import MLPDescriptor, CNNDescriptor, RNNDescriptor
 # from .networks import MLP, CNN, RNN
 
-# BPINN sub-package (Bayesian Physics-Informed Neural Networks)
-from . import bpinn
+# Physics-informed NN sub-packages
+from . import bpinn    # Bayesian PINNs (equinox)
+from . import pinns    # Standard PINNs (equinox)
+from . import pikans   # Kolmogorov-Arnold PINNs (jaxkan/flax.nnx)
+from . import fbpinns  # Finite Basis PINNs (pure JAX)
 
 __all__ = [
     "__version__",
     "bpinn",
+    "pinns",
+    "pikans",
+    "fbpinns",
 ]
